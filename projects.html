@@ -132,8 +132,6 @@ int lsh_pipe(char **args) {
                 <h2>Wypożyczalnia Filmów</h2>
                 <p>W Javie i MySQL stworzono system zarządzania wypożyczalnią filmów. Aplikacja umożliwia użytkownikom wystawianie recenzji, przeglądanie dostępnych filmów i ich wypożyczenie. Administratorzy mają możliwość zarządzania zasobami oraz użytkownikami.</p>
                 <pre><code>
-# Konfiguracja źródeł danych w pliku application.properties
-
 spring.datasource.db1.url=jdbc:mysql://localhost:3306/FilmRental?noAccessToProcedureBodies=true
 spring.datasource.db1.username=film_admin
 spring.datasource.db1.password=admin
@@ -144,7 +142,6 @@ spring.datasource.db2.username=film_user
 spring.datasource.db2.password=user
 spring.datasource.db2.driver-class-name=com.mysql.cj.jdbc.Driver
 
-# Ustawienia JPA (Hibernate)
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
