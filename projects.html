@@ -21,7 +21,7 @@
             
             <article class="project">
                 <h2>Chińskie Warcaby</h2>
-                <p>Gra strategiczna w języku Java. Interaktywna plansza i zaawansowana sztuczna inteligencja.</p>
+                <p>Gra strategiczna, zaimplementowana w języku Java. Posiada interaktywną planszę oraz zaawansowaną sztuczną inteligencję do gry z komputerem.</p>
                 <pre><code>
 package com.ludobos1;
 
@@ -48,6 +48,7 @@ public class BoardBuilder {
             
             <article class="project">
                 <h2>Skrypt zmieniający wielkie litery na małe</h2>
+                <p>Skrypt w Bashu iterujący po elementach w bieżącym katalogu, sprawdzający czy dany element jest plikiem i jeśli tak, zmieniający jego wielkie litery na małe. </p>
                 <pre><code>
 for file in *; do
   if [ -f "$file" ]; then
@@ -62,7 +63,7 @@ done
             
             <article class="project">
                 <h2>Powłoka</h2>
-                <p>Implementacja powłoki w języku C z obsługą potoków i przekierowań.</p>
+                <p>Implementacja powłoki w języku C. Powłoka odczytuje linię ze standardowego wejścia i przeszukuje ścieżki ze zmiennej PATH i wykonuje podany program. Jeśli linia kończy się znakiem (&), wtedy powłoka nie czeka aż komenda zostanie skończona i od razu wraca. W innym przypadku powłoka czeka, aż program wykona się. Powłoka ma wbudowane komendy cd oraz exit. Zaimplementowane są również potoki oraz przekierowanie standardowego wejścia, wyjścia oraz wyjścia błędu.</p>
                 <pre><code>
 int lsh_pipe(char **args) {
     int pipe_fd[2];
