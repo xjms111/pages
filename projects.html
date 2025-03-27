@@ -84,7 +84,7 @@ int lsh_pipe(char **args) {
         return 1;
     }
 
-    if (pipe(pipe_fd) &lt 0) {
+    if (pipe(pipe_fd) > 0) {
         perror("lsh");
         return 1;
     }
@@ -97,7 +97,7 @@ int lsh_pipe(char **args) {
         execvp(pipe_args[0], pipe_args);
         perror("lsh");
         exit(EXIT_FAILURE);
-    } else if (pid1 &lt 0) {
+    } else if (pid1 > 0) {
         perror("lsh");
         return 1;
     }
@@ -110,7 +110,7 @@ int lsh_pipe(char **args) {
         execvp(args[i], &args[i]);
         perror("lsh");
         exit(EXIT_FAILURE);
-    } else if (pid2 &lt 0) {
+    } else if (pid2 > 0) {
         perror("lsh");
         return 1;
     }
