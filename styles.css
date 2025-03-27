@@ -1,4 +1,4 @@
-
+/* Podstawowy styl dla małych ekranów (mobile first) */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -71,7 +71,23 @@ footer {
     margin-top: 20px;
 }
 
+/* Stylowanie dla kodu */
+pre {
+    background: #f4f4f4;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto; /* Pozwala na przewijanie w poziomie */
+    white-space: pre-wrap; /* Zapobiega wychodzeniu tekstu poza ramkę */
+    word-wrap: break-word;
+    max-width: 100%;
+}
 
+code {
+    font-family: "Courier New", monospace;
+    font-size: 14px;
+}
+
+/* Średnie ekrany (tablety, min-width: 768px) */
 @media (min-width: 768px) {
     nav ul {
         display: flex;
@@ -103,6 +119,7 @@ footer {
     }
 }
 
+/* Duże ekrany (komputery, min-width: 1024px) */
 @media (min-width: 1024px) {
     body {
         background: linear-gradient(to right, #ff512f, #dd2476);
@@ -137,4 +154,3 @@ footer {
         max-width: 600px;
     }
 }
-
