@@ -126,29 +126,7 @@ int lsh_pipe(char **args) {
 }
                 </code></pre>
                 <p><em>Funkcja umożliwiająca komunikację między 2 procesami za pomocą potoku</em></p>
-            </article>
-            
-            <article class="project">
-                <h2>Wypożyczalnia Filmów</h2>
-                <p>W Javie i MySQL stworzono system zarządzania wypożyczalnią filmów. Aplikacja umożliwia użytkownikom wystawianie recenzji, przeglądanie dostępnych filmów i ich wypożyczenie. Administratorzy mają możliwość zarządzania zasobami oraz użytkownikami.</p>
-                <pre><code>
-spring.datasource.db1.url=jdbc:mysql://localhost:3306/FilmRental?noAccessToProcedureBodies=true
-spring.datasource.db1.username=film_admin
-spring.datasource.db1.password=admin
-spring.datasource.db1.driver-class-name=com.mysql.cj.jdbc.Driver
-
-spring.datasource.db2.url=jdbc:mysql://localhost:3306/FilmRental?noAccessToProcedureBodies=true
-spring.datasource.db2.username=film_user
-spring.datasource.db2.password=user
-spring.datasource.db2.driver-class-name=com.mysql.cj.jdbc.Driver
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
-                </code></pre>
-                <p><em>Kluczowa dla aplikacji program konfiguracji bazy danych z programem w języku Java</em></p>
-            </article>
+            </article>    
         </section>
     </main>
     <footer>
