@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Układanka obrazkowa</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 1rem;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      justify-content: center;
+    }
+
+    canvas {
+      border: 2px solid #000;
+      max-width: 100%;
+      height: auto;
+      touch-action: manipulation;
+    }
+
+    label, select, input, button {
+      font-size: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .controls {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Układanka Obrazkowa</h1>
+  <div class="controls">
+    <label for="image">Wybierz obraz:</label>
+    <select id="image">
+      <option value="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/JavaScript-logo.png/640px-JavaScript-logo.png">JavaScript</option>
+      <option value="https://upload.wikimedia.org/wikipedia/commons/1/17/Google-flutter-logo.png">Flutter</option>
+    </select>
+
+    <label for="size">Rozmiar planszy:</label>
+    <select id="size">
+      <option value="3">3x3</option>
+      <option value="4">4x4</option>
+      <option value="5">5x5</option>
+    </select>
+
+    <button onclick="startGame()">Start</button>
+  </div>
+  <canvas id="puzzle"></canvas>
+
+  <script>
+    const canvas = document.getElementById("puzzle");
+    const ctx = canvas.getContext("2d");
+    let img = new Image();
+    let tiles = [];
+    let size = 3;
+    let tileSize;
+    let empty = { x: 0, y: 0 };
+    let imageSrc = document.getElementById("image").value;
+
+    function startGame() {
+      size = parseInt(document.getElementById("size").value);
+      imageSrc = document.getElementById("image").value;
+      img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = imageSrc;
+      img.onload = () => {
+        canvas.width = Math.min(window.innerWidth * 0.9, 500);
+        canvas.height = canvas.width;
+        tileSize = canvas.width / size;
+        initTiles();
+        drawTiles();
+      };
+    }
+
+    function initTiles() {
+      tiles = [];
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          tiles.push({ x, y });
+        }
+      }
+      empty = { x: 0, y: 0 };
+      shuffleTiles();
+    }
+
+    function shuffleTiles() {
+      for (let i = 0; i < 1000; i++) {
+        const neighbors = getNeighbors();
+        const tile = neighbors[Math.floor(Math.random() * neighbors.length)];
+        swapTiles(empty, tile);
+      }
+    }
+
+    function getNeighbors() {
+      return tiles.filter(t => {
+        return (Math.abs(t.x - empty.x) === 1 && t.y === empty.y) ||
+               (Math.abs(t.y - empty.y) === 1 && t.x === empty.x);
+      });
+    }
+
+    function swapTiles(a, b) {
+      const ai = tiles.findIndex(t => t.x === a.x && t.y === a.y);
+      const bi = tiles.findIndex(t => t.x === b.x && t.y === b.y);
+      [tiles[ai], tiles[bi]] = [tiles[bi], tiles[ai]];
+      empty = { x: b.x, y: b.y };
+    }
+
+    function drawTiles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let tile of tiles) {
+        const index = tile.y * size + tile.x;
+        const dx = tile.x * tileSize;
+        const dy = tile.y * tileSize;
+
+        if (tile.x === empty.x && tile.y === empty.y) {
+          ctx.fillStyle = "blue";
+          ctx.fillRect(dx, dy, tileSize, tileSize);
+        } else {
+          const sx = index % size * tileSize;
+          const sy = Math.floor(index / size) * tileSize;
+          ctx.drawImage(img, sx, sy, tileSize, tileSize, dx, dy, tileSize, tileSize);
+        }
+      }
+    }
+
+    function getTileAt(x, y) {
+      return tiles.find(t =>
+        x >= t.x * tileSize && x < (t.x + 1) * tileSize &&
+        y >= t.y * tileSize && y < (t.y + 1) * tileSize);
+    }
+
+    function handleInteraction(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+      const tile = getTileAt(x, y);
+      if (!tile) return;
+      const isNeighbor = (Math.abs(tile.x - empty.x) === 1 && tile.y === empty.y) ||
+                         (Math.abs(tile.y - empty.y) === 1 && tile.x === empty.x);
+      if (isNeighbor) {
+        swapTiles(empty, tile);
+        drawTiles();
+      }
+    }
+
+    canvas.addEventListener("click", handleInteraction);
+    canvas.addEventListener("touchstart", handleInteraction);
+
+    window.addEventListener("resize", () => {
+      if (img.complete) {
+        canvas.width = Math.min(window.innerWidth * 0.9, 500);
+        canvas.height = canvas.width;
+        tileSize = canvas.width / size;
+        drawTiles();
+      }
+    });
+
+    window.onload = startGame;
+  </script>
+</body>
+</html>

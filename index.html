@@ -9,24 +9,32 @@
 <body>
     <header>
         <nav>
-            <ul class="menu">
+            <!-- Menu statyczne dla braku JS -->
+            <ul class="menu no-js-menu">
+                <li><a href="about.html">O mnie</a></li>
+                <li><a href="projects.html">Projekty</a></li>
+            </ul>
+
+            <!-- Menu dynamiczne dla JS -->
+            <button id="hamburger" aria-label="Menu">&#9776;</button>
+            <ul class="menu" id="menu">
                 <li><a href="about.html">O mnie</a></li>
                 <li><a href="projects.html">Projekty</a></li>
             </ul>
         </nav>
     </header>
+
     <main>
         <section class="welcome">
             <h1>Witam na mojej stronie!</h1>
             <p>Zapraszam do zapoznania się z moimi zainteresowaniami oraz projektami.</p>
         </section>
     </main>
+
     <footer>
         <p>&copy; 2025 Moja Strona</p>
     </footer>
+
+    <script src="menu.js"></script>
 </body>
 </html>
-
-
-
-

@@ -10,7 +10,15 @@
     <header>
         <h1>E-sport</h1>
         <nav>
-            <ul class="menu">
+            <!-- Menu statyczne dla braku JS -->
+            <ul class="menu no-js-menu">
+                <li><a href="index.html">Strona Główna</a></li>
+                <li><a href="about.html">O mnie</a></li>
+            </ul>
+            
+            <!-- Menu dynamiczne dla JS -->
+            <button id="hamburger" aria-label="Menu">&#9776;</button>
+            <ul class="menu" id="menu"></ul>
                 <li><a href="index.html">Strona Główna</a></li>
                 <li><a href="about.html">O mnie</a></li>
             </ul>
@@ -41,5 +49,6 @@
     <footer>
         <p>&copy; 2025 Wszystkie prawa zastrzeżone.</p>
     </footer>
+    <script src="menu.js"></script>
 </body>
 </html>

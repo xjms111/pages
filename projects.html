@@ -1,28 +1,49 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Projekty</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- Prism.js styl i skrypt -->
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.js"></script>
+
+    <!-- Styl zmieniający kolor kodu na niebieski -->
+    <style>
+        code[class*="language-"],
+        pre[class*="language-"] {
+            color: #007acc !important;
+        }
+    </style>
 </head>
 <body>
     <header>
         <nav>
-            <ul class="menu">
+            <!-- Menu statyczne dla przeglądarek bez JS -->
+            <ul class="menu no-js-menu">
+                <li><a href="index.html">Strona Główna</a></li>
+                <li><a href="about.html">O mnie</a></li>
+            </ul>
+
+            <!-- Menu dynamiczne dla przeglądarek z JS -->
+            <button id="hamburger" aria-label="Menu">&#9776;</button>
+            <ul class="menu" id="menu">
                 <li><a href="index.html">Strona Główna</a></li>
                 <li><a href="about.html">O mnie</a></li>
             </ul>
         </nav>
     </header>
+
     <main>
         <section class="projects">
             <h1>Moje Projekty</h1>
-            
+
             <article class="project">
                 <h2>Chińskie Warcaby</h2>
                 <p>Gra strategiczna w języku Java. Interaktywna plansza i zaawansowana sztuczna inteligencja.</p>
-                <pre><code>
+                <pre><code class="language-java">
 package com.ludobos1;
 
 public class BoardBuilder {
@@ -45,10 +66,10 @@ public class BoardBuilder {
 }
                 </code></pre>
             </article>
-            
+
             <article class="project">
                 <h2>Skrypt zmieniający wielkie litery na małe</h2>
-                <pre><code>
+                <pre><code class="language-bash">
 for file in *; do
   if [ -f "$file" ]; then
     lowercase_file=$(echo "$file" | tr '[:upper:]' '[:lower:]')
@@ -59,11 +80,11 @@ for file in *; do
 done
                 </code></pre>
             </article>
-            
+
             <article class="project">
                 <h2>Powłoka</h2>
                 <p>Implementacja powłoki w języku C z obsługą potoków i przekierowań.</p>
-                <pre><code>
+                <pre><code class="language-c">
 int lsh_pipe(char **args) {
     int pipe_fd[2];
     pid_t pid1, pid2;
@@ -84,7 +105,7 @@ int lsh_pipe(char **args) {
         return 1;
     }
 
-    if (pipe(pipe_fd) > 0) {
+    if (pipe(pipe_fd) < 0) {
         perror("lsh");
         return 1;
     }
@@ -97,7 +118,7 @@ int lsh_pipe(char **args) {
         execvp(pipe_args[0], pipe_args);
         perror("lsh");
         exit(EXIT_FAILURE);
-    } else if (pid1 > 0) {
+    } else if (pid1 < 0) {
         perror("lsh");
         return 1;
     }
@@ -110,7 +131,7 @@ int lsh_pipe(char **args) {
         execvp(args[i], &args[i]);
         perror("lsh");
         exit(EXIT_FAILURE);
-    } else if (pid2 > 0) {
+    } else if (pid2 < 0) {
         perror("lsh");
         return 1;
     }
@@ -126,6 +147,7 @@ int lsh_pipe(char **args) {
             </article>
         </section>
     </main>
+
     <footer>
         <p>&copy; 2025 Wszystkie prawa zastrzeżone.</p>
     </footer>

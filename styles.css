@@ -151,3 +151,80 @@ code {
         max-width: 600px;
     }
 }
+#hamburger {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: white;
+    cursor: pointer;
+    margin: 10px;
+}
+
+@media (max-width: 767px) {
+    #hamburger {
+        display: block;
+    }
+
+    .menu {
+        display: none;
+        flex-direction: column;
+        background-color: #222;
+    }
+
+    .menu.show {
+        display: flex;
+    }
+
+    nav ul li {
+        margin: 5px 0;
+    }
+
+    .gallery-section {
+        text-align: center;
+        padding: 30px;
+    }
+    
+    #gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .gallery-img {
+        max-width: 200px;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+    }
+    
+    .gallery-img:hover {
+        transform: scale(1.05);
+    }
+}
+
+/* Domyślnie pokazujemy menu bez JS */
+.no-js-menu {
+    display: block;
+}
+
+/* Ukrywamy hamburgera i menu JS, jeśli JS nie działa */
+#menu,
+#hamburger {
+    display: none;
+}
+
+/* Gdy JS działa, pokazujemy hamburger i menu JS, ukrywamy statyczne */
+body.js-enabled .no-js-menu {
+    display: none;
+}
+
+body.js-enabled #menu,
+body.js-enabled #hamburger {
+    display: block;
+}
+
