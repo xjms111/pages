@@ -211,15 +211,19 @@
 
         // Funkcja do zapisywania stanu gry w localStorage
         function saveGameState() {
-            const state = {
-                rows,
-                cols,
-                emptyTile,
-                tiles,
-                imageSrc: image.src
-            };
-            localStorage.setItem("puzzleGameState", JSON.stringify(state));
-        }
+    const tilePositions = tiles.map(row =>
+        row.map(tile => tile ? { row: tile.row, col: tile.col } : null)
+    );
+    const state = {
+        rows,
+        cols,
+        emptyTile,
+        tilePositions,
+        imageSrc: image.src
+    };
+    localStorage.setItem("puzzleGameState", JSON.stringify(state));
+}
+
 
         // Funkcja do ładowania stanu gry z localStorage
         function loadGameState() {
