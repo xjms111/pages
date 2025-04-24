@@ -185,12 +185,16 @@
             emptyTile = state.emptyTile;
             tiles = state.tiles;
             image.src = state.imageSrc;
-            image.onload = () => {
-                tileSize = Math.floor(Math.min(image.width / cols, image.height / rows));
-                createCanvas();
-                drawTiles();
-            };
-            return true;
+
+            // Musimy poczekać na załadowanie obrazka, zanim zaczniemy rysować
+            return new Promise((resolve) => {
+                image.onload = () => {
+                    tileSize = Math.floor(Math.min(image.width / cols, image.height / rows));
+                    createCanvas();
+                    drawTiles();
+                    resolve();
+                };
+            });
         }
 
         // Nasłuchiwanie na przycisk Start
@@ -237,7 +241,7 @@
 
         // Załadowanie gry po otwarciu strony
         window.addEventListener("DOMContentLoaded", () => {
-            if (!loadGameState()) {
+            loadGameState().catch(() => {
                 image.src = "https://picsum.photos/300";
                 image.onload = () => {
                     tileSize = Math.floor(Math.min(image.width / cols, image.height / rows));
@@ -246,7 +250,7 @@
                     drawTiles();
                     saveGameState();
                 };
-            }
+            });
         });
     </script>
 </body>
