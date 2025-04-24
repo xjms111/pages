@@ -5,10 +5,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const gallery = document.getElementById("gallery");
 
     const imageUrls = [
-        "images/siatka1.jpg",
-        "images/siatka2.jpg",
-        "images/siatka3.jpg",
-        "images/siatka4.jpg"
+        siatka1.jpg",
+        siatka2.jpg",
+        siatka3.jpg",
+        siatka4.jpg"
     ];
 
     function loadImage(url) {
