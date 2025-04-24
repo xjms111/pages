@@ -2,191 +2,257 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Układanka obrazkowa</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       text-align: center;
       margin: 0;
-      padding: 0;
+      padding: 20px;
+      background: #f4f4f4;
     }
+
     canvas {
-      margin-top: 20px;
       border: 2px solid #333;
-      touch-action: none;
+      margin-top: 20px;
+      touch-action: manipulation;
+      image-rendering: pixelated;
     }
+
     input, select, button {
-      margin: 5px;
+      margin: 10px;
+      padding: 8px;
+      font-size: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    @media (min-width: 600px) {
+      .controls {
+        flex-direction: row;
+        justify-content: center;
+      }
+    }
+
+    .highlight {
+      outline: 2px solid red;
     }
   </style>
 </head>
 <body>
   <h1>Układanka obrazkowa</h1>
-  <input type="file" id="fileInput" accept="image/*" />
-  <label>Rozmiar:
-    <select id="sizeSelect">
+  <div class="controls">
+    <input type="file" id="imageInput" accept="image/*" />
+    <label for="size">Rozmiar:</label>
+    <select id="size">
       <option value="3">3x3</option>
       <option value="4">4x4</option>
       <option value="5">5x5</option>
     </select>
-  </label>
-  <button id="startButton">Start</button>
-  <button id="resetButton">Reset</button>
-
-  <canvas id="puzzle" width="600" height="600"></canvas>
+    <button id="startBtn">Nowa gra</button>
+    <button id="resetBtn">Wczytaj ostatnią</button>
+  </div>
+  <canvas id="puzzleCanvas" width="450" height="450"></canvas>
 
   <script>
-    const canvas = document.getElementById("puzzle");
-    const ctx = canvas.getContext("2d");
-    const fileInput = document.getElementById("fileInput");
-    const sizeSelect = document.getElementById("sizeSelect");
-    const startButton = document.getElementById("startButton");
-    const resetButton = document.getElementById("resetButton");
+    /*jslint browser */
+    /*global Image */
 
-    let img = new Image();
+    const canvas = document.getElementById("puzzleCanvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    ctx.imageSmoothingEnabled = false;
+
+    const imageInput = document.getElementById("imageInput");
+    const sizeSelect = document.getElementById("size");
+    const startBtn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let image = new Image();
     let gridSize = 3;
     let tiles = [];
-    let emptyTile = { x: 0, y: 0 };
-    let tileSize;
+    let emptyTile = { row: 0, col: 0 };
     let imgDataUrl = "";
-
-    function drawPuzzle() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      tiles.forEach(tile => {
-        if (!(tile.x === emptyTile.x && tile.y === emptyTile.y)) {
-          ctx.drawImage(
-            img,
-            tile.srcX * tileSize,
-            tile.srcY * tileSize,
-            tileSize,
-            tileSize,
-            tile.x * tileSize,
-            tile.y * tileSize,
-            tileSize,
-            tileSize
-          );
-        } else {
-          ctx.fillStyle = "blue";
-          ctx.fillRect(tile.x * tileSize, tile.y * tileSize, tileSize, tileSize);
-        }
-      });
-    }
-
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-    }
+    let pieceWidth, pieceHeight;
 
     function saveState() {
       const state = {
-        gridSize,
-        tiles,
-        emptyTile,
-        imgDataUrl,
+        imgDataUrl: imgDataUrl,
+        gridSize: gridSize,
+        tiles: tiles,
+        emptyTile: emptyTile
       };
       localStorage.setItem("puzzleState", JSON.stringify(state));
     }
 
     function loadState() {
-      const saved = localStorage.getItem("puzzleState");
-      if (!saved) return false;
-      const state = JSON.parse(saved);
+      const state = JSON.parse(localStorage.getItem("puzzleState"));
+      if (!state) return;
+      imgDataUrl = state.imgDataUrl;
       gridSize = state.gridSize;
       tiles = state.tiles;
       emptyTile = state.emptyTile;
-      imgDataUrl = state.imgDataUrl;
       sizeSelect.value = gridSize;
-      img.onload = () => {
-        tileSize = canvas.width / gridSize;
+
+      image.onload = () => {
         drawPuzzle();
       };
-      img.src = imgDataUrl;
-      return true;
+      image.src = imgDataUrl;
     }
 
-    function setupPuzzle() {
-      tileSize = canvas.width / gridSize;
+    function initTiles() {
       tiles = [];
-      for (let y = 0; y < gridSize; y++) {
-        for (let x = 0; x < gridSize; x++) {
-          tiles.push({ x, y, srcX: x, srcY: y });
+      for (let i = 0; i < gridSize * gridSize; i++) {
+        tiles.push(i);
+      }
+
+      // Fisher–Yates shuffle
+      for (let i = tiles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+      }
+
+      // Ensure solvable
+      tiles[0] = -1; // empty tile
+      emptyTile = { row: 0, col: 0 };
+    }
+
+    function drawPuzzle() {
+      canvas.width = 450;
+      canvas.height = 450;
+      pieceWidth = canvas.width / gridSize;
+      pieceHeight = canvas.height / gridSize;
+
+      for (let i = 0; i < tiles.length; i++) {
+        const val = tiles[i];
+        const row = Math.floor(i / gridSize);
+        const col = i % gridSize;
+
+        if (val === -1) {
+          ctx.fillStyle = "blue";
+          ctx.fillRect(col * pieceWidth, row * pieceHeight, pieceWidth, pieceHeight);
+        } else {
+          const srcRow = Math.floor(val / gridSize);
+          const srcCol = val % gridSize;
+
+          ctx.drawImage(
+            image,
+            srcCol * (image.width / gridSize),
+            srcRow * (image.height / gridSize),
+            image.width / gridSize,
+            image.height / gridSize,
+            col * pieceWidth,
+            row * pieceHeight,
+            pieceWidth,
+            pieceHeight
+          );
         }
       }
-      shuffle(tiles);
-      tiles.forEach((tile, i) => {
-        tile.x = i % gridSize;
-        tile.y = Math.floor(i / gridSize);
-      });
-      emptyTile = tiles[0];
-      drawPuzzle();
+
       saveState();
     }
 
-    canvas.addEventListener("click", e => {
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.floor((e.clientX - rect.left) / tileSize);
-      const y = Math.floor((e.clientY - rect.top) / tileSize);
-      const clicked = tiles.find(t => t.x === x && t.y === y);
-      if (clicked && isAdjacent(clicked, emptyTile)) {
-        const temp = { x: clicked.x, y: clicked.y };
-        clicked.x = emptyTile.x;
-        clicked.y = emptyTile.y;
-        emptyTile.x = temp.x;
-        emptyTile.y = temp.y;
-        drawPuzzle();
-        saveState();
-      }
-    });
-
-    function isAdjacent(a, b) {
-      return (
-        (a.x === b.x && Math.abs(a.y - b.y) === 1) ||
-        (a.y === b.y && Math.abs(a.x - b.x) === 1)
-      );
+    function getTileAt(x, y) {
+      const col = Math.floor(x / pieceWidth);
+      const row = Math.floor(y / pieceHeight);
+      return { row, col };
     }
 
-    startButton.addEventListener("click", () => {
-      gridSize = parseInt(sizeSelect.value, 10);
-      if (!img.src) {
-        img.src = "default.jpg";
-        img.onload = () => {
-          imgDataUrl = canvas.toDataURL("image/jpeg");
-          setupPuzzle();
-        };
-      } else {
-        setupPuzzle();
+    function isAdjacent(row, col) {
+      const dx = Math.abs(emptyTile.col - col);
+      const dy = Math.abs(emptyTile.row - row);
+      return (dx + dy === 1);
+    }
+
+    function swapTiles(row, col) {
+      const fromIndex = row * gridSize + col;
+      const toIndex = emptyTile.row * gridSize + emptyTile.col;
+
+      [tiles[fromIndex], tiles[toIndex]] = [tiles[toIndex], tiles[fromIndex]];
+      emptyTile = { row, col };
+      drawPuzzle();
+
+      if (checkWin()) {
+        setTimeout(() => {
+          alert("Gratulacje! Ułożyłeś obrazek!");
+          localStorage.removeItem("puzzleState");
+        }, 300);
+      }
+    }
+
+    function checkWin() {
+      for (let i = 1; i < tiles.length; i++) {
+        if (tiles[i] !== i) return false;
+      }
+      return tiles[0] === -1;
+    }
+
+    canvas.addEventListener("click", function (e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const { row, col } = getTileAt(x, y);
+
+      if (isAdjacent(row, col)) {
+        swapTiles(row, col);
       }
     });
 
-    fileInput.addEventListener("change", e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        img.src = event.target.result;
-        imgDataUrl = event.target.result;
-        img.onload = () => {
-          setupPuzzle();
-        };
-      };
-      reader.readAsDataURL(file);
+    canvas.addEventListener("touchstart", function (e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const y = e.touches[0].clientY - rect.top;
+      const { row, col } = getTileAt(x, y);
+
+      if (isAdjacent(row, col)) {
+        swapTiles(row, col);
+      }
     });
 
-    resetButton.addEventListener("click", () => {
-      localStorage.removeItem("puzzleState");
-      location.reload();
+    startBtn.addEventListener("click", function () {
+      gridSize = parseInt(sizeSelect.value, 10);
+      if (image.src) {
+        initTiles();
+        drawPuzzle();
+      }
+    });
+
+    resetBtn.addEventListener("click", function () {
+      loadState();
+    });
+
+    imageInput.addEventListener("change", function () {
+      const file = imageInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          imgDataUrl = e.target.result;
+          image.onload = () => {
+            initTiles();
+            drawPuzzle();
+          };
+          image.src = imgDataUrl;
+        };
+        reader.readAsDataURL(file);
+      }
     });
 
     window.addEventListener("load", () => {
-      if (!loadState()) {
-        img.src = "default.jpg";
-        img.onload = () => {
-          imgDataUrl = canvas.toDataURL("image/jpeg");
-          setupPuzzle();
+      const state = localStorage.getItem("puzzleState");
+      if (state) {
+        loadState();
+      } else {
+        image.src = "default.jpg"; // Możesz dodać domyślny obrazek
+        image.onload = () => {
+          initTiles();
+          drawPuzzle();
         };
+        imgDataUrl = image.src;
       }
     });
   </script>
