@@ -251,6 +251,7 @@
         document.getElementById("startBtn").addEventListener("click", () => {
             rows = cols = parseInt(sizeInput.value);
             const file = imageInput.files[0];
+
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -260,18 +261,18 @@
                         createCanvas();
                         shuffleTiles();
                         drawTiles();
-                        saveGameState(); // Zapisz stan
+                        saveGameState(); // Zapisz stan gry
                     };
                 };
                 reader.readAsDataURL(file);
             } else {
-                image.src = "https://picsum.photos/300"; // Losowy obraz
+                image.src = "https://picsum.photos/300";
                 image.onload = () => {
                     tileSize = Math.floor(Math.min(image.width / cols, image.height / rows));
                     createCanvas();
                     shuffleTiles();
                     drawTiles();
-                    saveGameState(); // Zapisz stan
+                    saveGameState(); // Zapisz stan gry (także dla losowego obrazu)
                 };
             }
         });
@@ -298,7 +299,7 @@
                     createCanvas();
                     shuffleTiles();
                     drawTiles();
-                    saveGameState();
+                    saveGameState(); 
                 };
             });
         });

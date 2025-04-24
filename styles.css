@@ -112,9 +112,9 @@ nav a {
     border-radius: 5px;
 }
 
-/* ==========================
+/* 
    MEDIA QUERIES
-========================== */
+*/
 
 /* Telefony i małe ekrany */
 @media (max-width: 767px) {
