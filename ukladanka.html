@@ -23,6 +23,26 @@
         button {
             margin: 0.5rem;
             padding: 0.5rem 1rem;
+            font-size: 1.1rem;
+            min-width: 150px;
+        }
+        input {
+            margin: 0.5rem;
+        }
+
+        /* Responsywność dla urządzeń mobilnych */
+        @media (max-width: 768px) {
+            #game-settings {
+                font-size: 0.9rem;
+            }
+            button {
+                font-size: 1rem;
+                padding: 0.8rem 1.5rem;
+            }
+            canvas {
+                width: 90%;
+                height: auto;
+            }
         }
     </style>
 </head>
@@ -139,11 +159,21 @@
             }
         }
 
-        // Nasłuchiwanie na kliknięcie na kafelku
+        // Obsługa kliknięcia dla myszy
         canvas.addEventListener("click", (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+            const { row, col } = getTileUnder(x, y);
+            moveTile(row, col);
+        });
+
+        // Obsługa dotyku na urządzeniach mobilnych
+        canvas.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const x = e.touches[0].clientX - rect.left;
+            const y = e.touches[0].clientY - rect.top;
             const { row, col } = getTileUnder(x, y);
             moveTile(row, col);
         });
@@ -153,6 +183,22 @@
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+            const { row, col } = getTileUnder(x, y);
+
+            if (row >= 0 && col >= 0 && row < rows && col < cols && isAdjacent(row, col)) {
+                hoveredTile = { row, col };
+            } else {
+                hoveredTile = null;
+            }
+            drawTiles();
+        });
+
+        // Nasłuchiwanie na ruch dotykowy
+        canvas.addEventListener("touchmove", (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const x = e.touches[0].clientX - rect.left;
+            const y = e.touches[0].clientY - rect.top;
             const { row, col } = getTileUnder(x, y);
 
             if (row >= 0 && col >= 0 && row < rows && col < cols && isAdjacent(row, col)) {
