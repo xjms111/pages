@@ -49,12 +49,15 @@
         let tiles = [];
         let emptyTile = { row: 0, col: 0 };
         let tileSize = 100;
+        let hoveredTile = null;
 
+        // Funkcja do tworzenia planszy (canvas)
         function createCanvas() {
             canvas.width = cols * tileSize;
             canvas.height = rows * tileSize;
         }
 
+        // Funkcja do tasowania kafelków
         function shuffleTiles() {
             let flatTiles = [];
             for (let r = 0; r < rows; r++) {
@@ -74,6 +77,7 @@
             tiles[0][0] = null;
         }
 
+        // Funkcja do rysowania kafelków
         function drawTiles() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let r = 0; r < rows; r++) {
@@ -97,10 +101,18 @@
                         ctx.fillStyle = "blue";
                         ctx.fillRect(x, y, tileSize, tileSize);
                     }
+
+                    // Podświetlenie
+                    if (hoveredTile && hoveredTile.row === r && hoveredTile.col === c) {
+                        ctx.strokeStyle = "yellow";
+                        ctx.lineWidth = 4;
+                        ctx.strokeRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
+                    }
                 }
             }
         }
 
+        // Funkcja do uzyskiwania kafelka pod wskazanym punktem
         function getTileUnder(x, y) {
             return {
                 row: Math.floor(y / tileSize),
@@ -108,22 +120,26 @@
             };
         }
 
+        // Funkcja sprawdzająca, czy kafelek jest przylegający do pustego
         function isAdjacent(row, col) {
             const dx = Math.abs(emptyTile.row - row);
             const dy = Math.abs(emptyTile.col - col);
             return (dx + dy === 1);
         }
 
+        // Funkcja do przesuwania kafelka
         function moveTile(row, col) {
             if (isAdjacent(row, col)) {
                 tiles[emptyTile.row][emptyTile.col] = tiles[row][col];
                 tiles[row][col] = null;
                 emptyTile = { row, col };
+                hoveredTile = null;
                 drawTiles();
                 saveGameState();
             }
         }
 
+        // Nasłuchiwanie na kliknięcie na kafelku
         canvas.addEventListener("click", (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -132,6 +148,22 @@
             moveTile(row, col);
         });
 
+        // Nasłuchiwanie na ruch myszki dla podświetlenia
+        canvas.addEventListener("mousemove", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const { row, col } = getTileUnder(x, y);
+
+            if (row >= 0 && col >= 0 && row < rows && col < cols && isAdjacent(row, col)) {
+                hoveredTile = { row, col };
+            } else {
+                hoveredTile = null;
+            }
+            drawTiles();
+        });
+
+        // Funkcja do zapisywania stanu gry w localStorage
         function saveGameState() {
             const state = {
                 rows,
@@ -143,6 +175,7 @@
             localStorage.setItem("puzzleGameState", JSON.stringify(state));
         }
 
+        // Funkcja do ładowania stanu gry z localStorage
         function loadGameState() {
             const saved = localStorage.getItem("puzzleGameState");
             if (!saved) return false;
@@ -153,12 +186,14 @@
             tiles = state.tiles;
             image.src = state.imageSrc;
             image.onload = () => {
+                tileSize = Math.floor(Math.min(image.width / cols, image.height / rows));
                 createCanvas();
                 drawTiles();
             };
             return true;
         }
 
+        // Nasłuchiwanie na przycisk Start
         document.getElementById("startBtn").addEventListener("click", () => {
             rows = cols = parseInt(sizeInput.value);
             const file = imageInput.files[0];
@@ -167,6 +202,7 @@
                 reader.onload = (e) => {
                     image.src = e.target.result;
                     image.onload = () => {
+                        tileSize = Math.floor(Math.min(image.width / cols, image.height / rows));
                         createCanvas();
                         shuffleTiles();
                         drawTiles();
@@ -177,6 +213,7 @@
             } else {
                 image.src = "https://picsum.photos/300";
                 image.onload = () => {
+                    tileSize = Math.floor(Math.min(image.width / cols, image.height / rows));
                     createCanvas();
                     shuffleTiles();
                     drawTiles();
@@ -185,21 +222,25 @@
             }
         });
 
+        // Nasłuchiwanie na przycisk Reset
         document.getElementById("resetBtn").addEventListener("click", () => {
             shuffleTiles();
             drawTiles();
             saveGameState();
         });
 
+        // Nasłuchiwanie na przycisk Usuń zapis
         document.getElementById("clearSaveBtn").addEventListener("click", () => {
             localStorage.removeItem("puzzleGameState");
             location.reload();
         });
 
+        // Załadowanie gry po otwarciu strony
         window.addEventListener("DOMContentLoaded", () => {
             if (!loadGameState()) {
                 image.src = "https://picsum.photos/300";
                 image.onload = () => {
+                    tileSize = Math.floor(Math.min(image.width / cols, image.height / rows));
                     createCanvas();
                     shuffleTiles();
                     drawTiles();
@@ -210,4 +251,3 @@
     </script>
 </body>
 </html>
-
