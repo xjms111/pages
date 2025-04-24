@@ -211,42 +211,41 @@
 
         // Funkcja do zapisywania stanu gry w localStorage
         function saveGameState() {
-    const tilePositions = tiles.map(row =>
-        row.map(tile => tile ? { row: tile.row, col: tile.col } : null)
-    );
-    const state = {
-        rows,
-        cols,
-        emptyTile,
-        tilePositions,
-        imageSrc: image.src
-    };
-    localStorage.setItem("puzzleGameState", JSON.stringify(state));
-}
-
+            const tilePositions = tiles.map(row =>
+                row.map(tile => tile ? { row: tile.row, col: tile.col } : null)
+            );
+            const state = {
+                rows,
+                cols,
+                emptyTile,
+                tilePositions,
+                imageSrc: image.src // Zapisz źródło obrazu
+            };
+            localStorage.setItem("puzzleGameState", JSON.stringify(state));
+        }
 
         // Funkcja do ładowania stanu gry z localStorage
         function loadGameState() {
-    const saved = localStorage.getItem("puzzleGameState");
-    if (!saved) return false;
-    const state = JSON.parse(saved);
-    rows = state.rows;
-    cols = state.cols;
-    emptyTile = state.emptyTile;
-    image.src = state.imageSrc;
+            const saved = localStorage.getItem("puzzleGameState");
+            if (!saved) return false;
+            const state = JSON.parse(saved);
+            rows = state.rows;
+            cols = state.cols;
+            emptyTile = state.emptyTile;
+            image.src = state.imageSrc;  // Załaduj zapisane źródło obrazu
 
-    return new Promise((resolve) => {
-        image.onload = () => {
-            tileSize = Math.floor(Math.min(image.width / cols, image.height / rows));
-            createCanvas();
-            tiles = state.tilePositions.map(row =>
-                row.map(tile => tile ? { row: tile.row, col: tile.col } : null)
-            );
-            drawTiles();
-            resolve();
-        };
-    });
-}
+            return new Promise((resolve) => {
+                image.onload = () => {
+                    tileSize = Math.floor(Math.min(image.width / cols, image.height / rows));
+                    createCanvas();
+                    tiles = state.tilePositions.map(row =>
+                        row.map(tile => tile ? { row: tile.row, col: tile.col } : null)
+                    );
+                    drawTiles();
+                    resolve();
+                };
+            });
+        }
 
         // Nasłuchiwanie na przycisk Start
         document.getElementById("startBtn").addEventListener("click", () => {
@@ -261,18 +260,18 @@
                         createCanvas();
                         shuffleTiles();
                         drawTiles();
-                        saveGameState();
+                        saveGameState(); // Zapisz stan
                     };
                 };
                 reader.readAsDataURL(file);
             } else {
-                image.src = "https://picsum.photos/300";
+                image.src = "https://picsum.photos/300"; // Losowy obraz
                 image.onload = () => {
                     tileSize = Math.floor(Math.min(image.width / cols, image.height / rows));
                     createCanvas();
                     shuffleTiles();
                     drawTiles();
-                    saveGameState();
+                    saveGameState(); // Zapisz stan
                 };
             }
         });
