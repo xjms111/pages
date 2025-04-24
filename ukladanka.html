@@ -1,213 +1,194 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Układanka Obrazkowa</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        #game-settings {
-            margin: 1rem;
-        }
-        canvas {
-            touch-action: manipulation;
-            display: block;
-            margin: 1rem auto;
-            border: 2px solid #000;
-        }
-        button {
-            margin: 0.5rem;
-            padding: 0.5rem 1rem;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Układanka obrazkowa</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    canvas {
+      margin-top: 20px;
+      border: 2px solid #333;
+      touch-action: none;
+    }
+    input, select, button {
+      margin: 5px;
+    }
+  </style>
 </head>
 <body>
-    <div id="game-settings">
-        <label for="size">Rozmiar: </label>
-        <input type="number" id="size" value="3" min="2" max="10">
-        <label for="image">Obrazek: </label>
-        <input type="file" id="image" accept="image/*">
-        <button id="startBtn">Start</button>
-        <button id="resetBtn">Nowa gra</button>
-        <button id="clearSaveBtn">Usuń zapis</button>
-    </div>
-    <canvas id="puzzle"></canvas>
+  <h1>Układanka obrazkowa</h1>
+  <input type="file" id="fileInput" accept="image/*" />
+  <label>Rozmiar:
+    <select id="sizeSelect">
+      <option value="3">3x3</option>
+      <option value="4">4x4</option>
+      <option value="5">5x5</option>
+    </select>
+  </label>
+  <button id="startButton">Start</button>
+  <button id="resetButton">Reset</button>
 
-    <script>
-        const canvas = document.getElementById("puzzle");
-        const ctx = canvas.getContext("2d");
-        const sizeInput = document.getElementById("size");
-        const imageInput = document.getElementById("image");
+  <canvas id="puzzle" width="600" height="600"></canvas>
 
-        let image = new Image();
-        let rows = 3, cols = 3;
-        let tiles = [];
-        let emptyTile = { row: 0, col: 0 };
-        let tileSize = 100;
+  <script>
+    const canvas = document.getElementById("puzzle");
+    const ctx = canvas.getContext("2d");
+    const fileInput = document.getElementById("fileInput");
+    const sizeSelect = document.getElementById("sizeSelect");
+    const startButton = document.getElementById("startButton");
+    const resetButton = document.getElementById("resetButton");
 
-        function createCanvas() {
-            canvas.width = cols * tileSize;
-            canvas.height = rows * tileSize;
+    let img = new Image();
+    let gridSize = 3;
+    let tiles = [];
+    let emptyTile = { x: 0, y: 0 };
+    let tileSize;
+    let imgDataUrl = "";
+
+    function drawPuzzle() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      tiles.forEach(tile => {
+        if (!(tile.x === emptyTile.x && tile.y === emptyTile.y)) {
+          ctx.drawImage(
+            img,
+            tile.srcX * tileSize,
+            tile.srcY * tileSize,
+            tileSize,
+            tileSize,
+            tile.x * tileSize,
+            tile.y * tileSize,
+            tileSize,
+            tileSize
+          );
+        } else {
+          ctx.fillStyle = "blue";
+          ctx.fillRect(tile.x * tileSize, tile.y * tileSize, tileSize, tileSize);
         }
+      });
+    }
 
-        function shuffleTiles() {
-            let flatTiles = [];
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    flatTiles.push({ row: r, col: c });
-                }
-            }
-            flatTiles.sort(() => Math.random() - 0.5);
-            tiles = [];
-            for (let i = 0; i < rows; i++) {
-                tiles[i] = [];
-                for (let j = 0; j < cols; j++) {
-                    tiles[i][j] = flatTiles[i * cols + j];
-                }
-            }
-            emptyTile = { row: 0, col: 0 };
-            tiles[0][0] = null;
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function saveState() {
+      const state = {
+        gridSize,
+        tiles,
+        emptyTile,
+        imgDataUrl,
+      };
+      localStorage.setItem("puzzleState", JSON.stringify(state));
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem("puzzleState");
+      if (!saved) return false;
+      const state = JSON.parse(saved);
+      gridSize = state.gridSize;
+      tiles = state.tiles;
+      emptyTile = state.emptyTile;
+      imgDataUrl = state.imgDataUrl;
+      sizeSelect.value = gridSize;
+      img.onload = () => {
+        tileSize = canvas.width / gridSize;
+        drawPuzzle();
+      };
+      img.src = imgDataUrl;
+      return true;
+    }
+
+    function setupPuzzle() {
+      tileSize = canvas.width / gridSize;
+      tiles = [];
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+          tiles.push({ x, y, srcX: x, srcY: y });
         }
+      }
+      shuffle(tiles);
+      tiles.forEach((tile, i) => {
+        tile.x = i % gridSize;
+        tile.y = Math.floor(i / gridSize);
+      });
+      emptyTile = tiles[0];
+      drawPuzzle();
+      saveState();
+    }
 
-        function drawTiles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    const tile = tiles[r][c];
-                    const x = c * tileSize;
-                    const y = r * tileSize;
-                    if (tile) {
-                        ctx.drawImage(
-                            image,
-                            tile.col * tileSize,
-                            tile.row * tileSize,
-                            tileSize,
-                            tileSize,
-                            x,
-                            y,
-                            tileSize,
-                            tileSize
-                        );
-                    } else {
-                        ctx.fillStyle = "blue";
-                        ctx.fillRect(x, y, tileSize, tileSize);
-                    }
-                }
-            }
-        }
+    canvas.addEventListener("click", e => {
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.floor((e.clientX - rect.left) / tileSize);
+      const y = Math.floor((e.clientY - rect.top) / tileSize);
+      const clicked = tiles.find(t => t.x === x && t.y === y);
+      if (clicked && isAdjacent(clicked, emptyTile)) {
+        const temp = { x: clicked.x, y: clicked.y };
+        clicked.x = emptyTile.x;
+        clicked.y = emptyTile.y;
+        emptyTile.x = temp.x;
+        emptyTile.y = temp.y;
+        drawPuzzle();
+        saveState();
+      }
+    });
 
-        function getTileUnder(x, y) {
-            return {
-                row: Math.floor(y / tileSize),
-                col: Math.floor(x / tileSize)
-            };
-        }
+    function isAdjacent(a, b) {
+      return (
+        (a.x === b.x && Math.abs(a.y - b.y) === 1) ||
+        (a.y === b.y && Math.abs(a.x - b.x) === 1)
+      );
+    }
 
-        function isAdjacent(row, col) {
-            const dx = Math.abs(emptyTile.row - row);
-            const dy = Math.abs(emptyTile.col - col);
-            return (dx + dy === 1);
-        }
+    startButton.addEventListener("click", () => {
+      gridSize = parseInt(sizeSelect.value, 10);
+      if (!img.src) {
+        img.src = "default.jpg";
+        img.onload = () => {
+          imgDataUrl = canvas.toDataURL("image/jpeg");
+          setupPuzzle();
+        };
+      } else {
+        setupPuzzle();
+      }
+    });
 
-        function moveTile(row, col) {
-            if (isAdjacent(row, col)) {
-                tiles[emptyTile.row][emptyTile.col] = tiles[row][col];
-                tiles[row][col] = null;
-                emptyTile = { row, col };
-                drawTiles();
-                saveGameState();
-            }
-        }
+    fileInput.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        img.src = event.target.result;
+        imgDataUrl = event.target.result;
+        img.onload = () => {
+          setupPuzzle();
+        };
+      };
+      reader.readAsDataURL(file);
+    });
 
-        canvas.addEventListener("click", (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const { row, col } = getTileUnder(x, y);
-            moveTile(row, col);
-        });
+    resetButton.addEventListener("click", () => {
+      localStorage.removeItem("puzzleState");
+      location.reload();
+    });
 
-        function saveGameState() {
-            const state = {
-                rows,
-                cols,
-                emptyTile,
-                tiles,
-                imageSrc: image.src
-            };
-            localStorage.setItem("puzzleGameState", JSON.stringify(state));
-        }
-
-        function loadGameState() {
-            const saved = localStorage.getItem("puzzleGameState");
-            if (!saved) return false;
-            const state = JSON.parse(saved);
-            rows = state.rows;
-            cols = state.cols;
-            emptyTile = state.emptyTile;
-            tiles = state.tiles;
-            image.src = state.imageSrc;
-            image.onload = () => {
-                createCanvas();
-                drawTiles();
-            };
-            return true;
-        }
-
-        document.getElementById("startBtn").addEventListener("click", () => {
-            rows = cols = parseInt(sizeInput.value);
-            const file = imageInput.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    image.src = e.target.result;
-                    image.onload = () => {
-                        createCanvas();
-                        shuffleTiles();
-                        drawTiles();
-                        saveGameState();
-                    };
-                };
-                reader.readAsDataURL(file);
-            } else {
-                image.src = "https://picsum.photos/300";
-                image.onload = () => {
-                    createCanvas();
-                    shuffleTiles();
-                    drawTiles();
-                    saveGameState();
-                };
-            }
-        });
-
-        document.getElementById("resetBtn").addEventListener("click", () => {
-            shuffleTiles();
-            drawTiles();
-            saveGameState();
-        });
-
-        document.getElementById("clearSaveBtn").addEventListener("click", () => {
-            localStorage.removeItem("puzzleGameState");
-            location.reload();
-        });
-
-        window.addEventListener("DOMContentLoaded", () => {
-            if (!loadGameState()) {
-                image.src = "https://picsum.photos/300";
-                image.onload = () => {
-                    createCanvas();
-                    shuffleTiles();
-                    drawTiles();
-                    saveGameState();
-                };
-            }
-        });
-    </script>
+    window.addEventListener("load", () => {
+      if (!loadState()) {
+        img.src = "default.jpg";
+        img.onload = () => {
+          imgDataUrl = canvas.toDataURL("image/jpeg");
+          setupPuzzle();
+        };
+      }
+    });
+  </script>
 </body>
 </html>
-
